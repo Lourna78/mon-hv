@@ -531,8 +531,13 @@ def run():
 
     # alertes Discord / e-mail
     alert_house = CONFIG.get("alerts", {}).get("house")
-    if alert_house in currents:
+    try:
         import alerts
+    except ImportError:
+        alerts = None
+        if alert_house:
+            print("  (alertes désactivées : fichier alerts.py absent)")
+    if alerts and alert_house in currents:
         sent_file = STATE / "alerts_sent.json"
         sent = load(sent_file, {})
         sent = {k: v for k, v in sent.items() if now.timestamp() - v[0] < 7 * 86400}
