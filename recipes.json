@@ -1,0 +1,87 @@
+[
+  {
+    "name": "Tisse-lune (recharge quotidienne)",
+    "profession": "Couture",
+    "makes": { "id": 14342, "qty": 1 },
+    "reagents": [
+      { "id": 14256, "qty": 2 }
+    ]
+  },
+  {
+    "name": "Rouleau d'étoffe runique",
+    "profession": "Couture",
+    "makes": { "id": 14048, "qty": 1 },
+    "reagents": [
+      { "id": 14047, "qty": 4 }
+    ]
+  },
+  {
+    "name": "Sac en étoffe runique",
+    "profession": "Couture",
+    "makes": { "id": 14046, "qty": 1 },
+    "reagents": [
+      { "id": 14048, "qty": 5 },
+      { "id": 8170, "qty": 2 },
+      { "id": 14341, "qty": 1, "vendor_price": 0, "note": "Fil runique acheté au PNJ fournitures de couture : renseignez son prix en cuivre (1po = 10000)" }
+    ]
+  },
+  {
+    "name": "Barre de thorium enchantée",
+    "profession": "Enchantement",
+    "makes": { "id": 12655, "qty": 1 },
+    "reagents": [
+      { "id": 12359, "qty": 1 },
+      { "id": 11176, "qty": 3 }
+    ]
+  },
+  {
+    "name": "Cuir enchanté",
+    "profession": "Enchantement",
+    "makes": { "id": 12810, "qty": 1 },
+    "reagents": [
+      { "id": 8170, "qty": 1 },
+      { "id": 16203, "qty": 1 }
+    ]
+  },
+  {
+    "name": "Kit d'armure robuste",
+    "profession": "Travail du cuir",
+    "makes": { "id": 15564, "qty": 1 },
+    "reagents": [
+      { "id": 8170, "qty": 5 }
+    ]
+  },
+  {
+    "name": "Pierre à aiguiser dense",
+    "profession": "Forge",
+    "makes": { "id": 12404, "qty": 1 },
+    "reagents": [
+      { "id": 12365, "qty": 1 }
+    ]
+  },
+  {
+    "name": "Pierre de lest dense",
+    "profession": "Forge",
+    "makes": { "id": 12643, "qty": 1 },
+    "reagents": [
+      { "id": 12365, "qty": 1 },
+      { "id": 14047, "qty": 1 }
+    ]
+  },
+  {
+    "name": "Fondre le thorium",
+    "profession": "Minage",
+    "makes": { "id": 12359, "qty": 1 },
+    "reagents": [
+      { "id": 10620, "qty": 1 }
+    ]
+  },
+  {
+    "name": "Fondre le vrai-argent",
+    "profession": "Minage",
+    "makes": { "id": 6037, "qty": 1 },
+    "reagents": [
+      { "id": 7911, "qty": 1 }
+    ]
+  }
+]
