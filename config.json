@@ -1,0 +1,24 @@
+{
+  "region": "eu",
+  "locale": "fr_FR",
+  "namespace": "dynamic-forever-eu",
+  "static_namespace": "static-1.60.1_70399-forever-eu",
+  "ruleset_id": 1,
+  "auction_houses": {
+    "horde-113": 113
+  },
+  "labels": {
+    "horde-113": "Horde · Normal EU"
+  },
+  "ah_cut": 0.05,
+  "history_days": 90,
+  "alerts": {
+    "house": "horde-113",
+    "deals": true,
+    "deal_pct": 40,
+    "min_value": "1po",
+    "min_profit": "5po",
+    "repeat_hours": 12,
+    "site_url": "https://lourna78.github.io/mon-hv/"
+  }
+}
