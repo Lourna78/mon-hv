@@ -16,6 +16,7 @@ import argparse
 import gzip
 import json
 import os
+import shutil
 import statistics
 import sys
 import threading
@@ -128,6 +129,29 @@ def weighted_median(pairs):
     return pairs[-1][0]
 
 
+def market_value(pairs):
+    """Valeur de marché : moyenne des 15 % d'unités les moins chères, sans les prix aberrants.
+
+    Une annonce isolée à 1 pc (erreur, troll) ou une poignée d'unités hors de prix
+    ne déplace plus la valeur, contrairement au simple « prix le plus bas ».
+    """
+    pairs = sorted(pairs)
+    total = sum(q for _, q in pairs)
+    if total < 4:
+        return weighted_median(pairs)
+    want = max(int(total * 0.15), min(total, 4))
+    take, acc = [], 0
+    for price, q in pairs:
+        n = min(q, want - acc)
+        take.append((price, n))
+        acc += n
+        if acc >= want:
+            break
+    mid = weighted_median(take)
+    kept = [(p, q) for p, q in take if mid * 0.5 <= p <= mid * 1.5] or take
+    return round(sum(p * q for p, q in kept) / sum(q for _, q in kept))
+
+
 def unit_price(a):
     if a.get("unit_price"):
         return a["unit_price"]
@@ -153,7 +177,10 @@ def fetch_house(api, ah_id):
 
 
 def summarize(auctions):
-    """-> {item_id: {p, m, q, n}} et l'instantané compact pour la détection de ventes."""
+    """-> {item_id: {p, pq, v, m, q, n}} et l'instantané compact pour la détection de ventes.
+
+    p = prix le plus bas, pq = unités disponibles à ce prix, v = valeur de marché,
+    m = médiane pondérée, q = unités en vente, n = annonces."""
     by_item, snap = {}, {}
     for a in auctions:
         item = a.get("item", {}).get("id")
@@ -166,8 +193,11 @@ def summarize(auctions):
             by_item.setdefault(item, []).append((up, qty))
     out = {}
     for item, pairs in by_item.items():
+        low = min(p for p, _ in pairs)
         out[item] = {
-            "p": min(p for p, _ in pairs),
+            "p": low,
+            "pq": sum(q for p, q in pairs if p == low),
+            "v": market_value(pairs),
             "m": weighted_median(pairs),
             "q": sum(q for _, q in pairs),
             "n": len(pairs),
@@ -307,7 +337,7 @@ def update_items(api, item_ids, meta, now):
 
 
 def update_history(house, summary, sold, now):
-    """Historique journalier par objet : [date, plus_bas, médiane_moy, qté_moy, vendus, heures]."""
+    """Historique journalier par objet : [date, plus_bas, valeur_marché_moy, qté_moy, vendus, heures]."""
     today = now.strftime("%Y-%m-%d")
     keep_from = (now - timedelta(days=CONFIG["history_days"])).strftime("%Y-%m-%d")
     hdir = DATA / house / "history"
@@ -322,13 +352,13 @@ def update_history(house, summary, sold, now):
             d, low, med, qty, sld, hrs = rows[-1]
             if s:
                 low = s["p"] if low is None else min(low, s["p"])
-                med = s["m"] if med is None else round((med * hrs + s["m"]) / (hrs + 1))
+                med = s["v"] if med is None else round((med * hrs + s["v"]) / (hrs + 1))
                 qty = round((qty * hrs + s["q"]) / (hrs + 1))
                 hrs += 1
             sld += sold.get(item, 0)
             rows[-1] = [d, low, med, qty, sld, hrs]
         else:
-            rows.append([today, s["p"] if s else None, s["m"] if s else None,
+            rows.append([today, s["p"] if s else None, s["v"] if s else None,
                          s["q"] if s else 0, sold.get(item, 0), 1 if s else 0])
 
     for sh in shards.values():
@@ -364,10 +394,11 @@ def build_current(summary, shards, now):
         w = by_date.get(week_ago) or (rows[0] if rows and rows[0][0] < yesterday else None)
         out[item] = {
             **s,
-            "m7": round(statistics.median(meds)) if meds else s["m"],
-            "d1": pct(s["p"], y[1] if y else None),
-            "w1": pct(s["p"], w[1] if w else None),
+            "m7": round(statistics.median(meds)) if meds else s["v"],   # valeur de marché médiane sur 7 jours
+            "d1": pct(s["v"], y[2] if y else None),                    # valeur de marché vs hier
+            "w1": pct(s["v"], w[2] if w else None),                    # valeur de marché vs il y a 7 jours
             "s7": s7,
+            "h": len(rows),                                            # jours d'historique
         }
     return out
 
@@ -378,6 +409,12 @@ def run():
     now = datetime.now(timezone.utc)
     meta = load(DATA / "meta.json", {"houses": {}})
     all_items = set()
+    currents = {}
+    # on ne garde que les HV de config.json (les anciens disparaissent du tableau de bord)
+    for old in [h for h in meta.get("houses", {}) if h not in CONFIG["auction_houses"]]:
+        meta["houses"].pop(old, None)
+        shutil.rmtree(DATA / old, ignore_errors=True)
+        (STATE / f"{old}.json.gz").unlink(missing_ok=True)
 
     for house, ah_id in CONFIG["auction_houses"].items():
         print(f"HV {house} (#{ah_id})")
@@ -390,6 +427,7 @@ def run():
         if last_mod and last_mod == state.get("last_modified"):
             print("  photo Blizzard inchangée depuis le dernier passage — rien à faire")
             all_items.update(int(k) for k in load(DATA / house / "current.json", {}).get("items", {}))
+            meta["houses"].setdefault(house, {})["label"] = CONFIG.get("labels", {}).get(house, house)
             continue
 
         summary, snap = summarize(auctions)
@@ -405,7 +443,9 @@ def run():
             "items": {str(k): v for k, v in current.items()},
         })
         save(state_file, {"ts": int(now.timestamp()), "last_modified": last_mod, "snap": snap})
+        currents[house] = {str(k): v for k, v in current.items()}
         meta["houses"][house] = {
+            "label": CONFIG.get("labels", {}).get(house, house),
             "ah_id": ah_id,
             "ts": int(now.timestamp()),
             "listings": len(auctions),
@@ -424,11 +464,22 @@ def run():
         all_items.add(r["makes"]["id"])
         all_items.update(g["id"] for g in r["reagents"])
     all_items.update(w["id"] for w in load(ROOT / "watchlist.json", []))
-    update_items(api, sorted(all_items), meta, now)
+    items = update_items(api, sorted(all_items), meta, now)
+
+    # alertes Discord / e-mail
+    alert_house = CONFIG.get("alerts", {}).get("house")
+    if alert_house in currents:
+        import alerts
+        sent_file = STATE / "alerts_sent.json"
+        sent = load(sent_file, {})
+        sent = {k: v for k, v in sent.items() if now.timestamp() - v[0] < 7 * 86400}
+        alerts.process(currents[alert_house], items, load(ROOT / "alerts.json", []), CONFIG, sent,
+                       int(now.timestamp()), CONFIG.get("labels", {}).get(alert_house, alert_house))
+        save(sent_file, sent)
     meta["updated"] = int(now.timestamp())
     meta["ah_cut"] = CONFIG["ah_cut"]
     save(DATA / "meta.json", meta)
-    for name in ("recipes.json", "watchlist.json"):
+    for name in ("recipes.json", "watchlist.json", "alerts.json"):
         src = ROOT / name
         if src.exists():
             (DATA / name).write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
@@ -453,6 +504,7 @@ def update_professions(meta, now):
         return data
     except Exception as e:  # le reste de l'outil continue de fonctionner
         print(f"  ! Recettes non mises à jour : {e}")
+        meta["recipes_check_ts"] = int(now.timestamp()) - 18 * 3600  # nouvel essai dans 6 h
         return current
 
 
