@@ -1,0 +1,21 @@
+[
+  {
+    "name": "Transmutation : Arcanite",
+    "profession": "Alchimie",
+    "makes": { "id": 12360, "qty": 1 },
+    "reagents": [
+      { "id": 12359, "qty": 1 },
+      { "id": 12363, "qty": 1 }
+    ]
+  },
+  {
+    "name": "Élixir de la mangouste",
+    "profession": "Alchimie",
+    "makes": { "id": 13452, "qty": 1 },
+    "reagents": [
+      { "id": 13465, "qty": 2 },
+      { "id": 13466, "qty": 2 },
+      { "id": 8925, "qty": 1, "vendor_price": 0, "note": "Fiole en cristal achetée au PNJ : renseignez son prix en cuivre" }
+    ]
+  }
+]
