@@ -23,8 +23,6 @@ jobs:
   collect:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment:
-      name: github-pages
     steps:
       - uses: actions/checkout@v4
 
@@ -79,5 +77,17 @@ jobs:
         with:
           path: site/public
 
-      - uses: actions/deploy-pages@v4
-        if: ${{ !inputs.discover }}
+  # Publication dans un job séparé (comme le modèle officiel de GitHub) : quand l'envoi et la
+  # publication sont dans le même job, GitHub ne retrouve parfois pas la page qu'il vient de recevoir.
+  deploy:
+    needs: collect
+    if: ${{ !inputs.discover }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Petite pause (laisser GitHub enregistrer la page)
+        run: sleep 15
+      - id: deployment
+        uses: actions/deploy-pages@v4
