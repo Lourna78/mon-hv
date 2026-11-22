@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Dépeçage des diablosaures",
+    "zone": "Cratère d'Un'Goro",
+    "req": "Dépeçage 300",
+    "tip": "Diablosaures et ptérodactyles en boucle ; le mage peut kiter un diablosaure seul avec Nova de givre et Éclair de givre.",
+    "source": "Rendement repris de Comptoir d'Azeroth (environ 35 cuirs par heure).",
+    "yields": [[15417, 35], [8170, 10]]
+  },
+  {
+    "name": "Élémentaires de feu",
+    "zone": "Steppes ardentes / Silithus",
+    "req": "Niveau 55+",
+    "tip": "Petits groupes de 3 à 5 : Nova de givre puis Choc de flammes. Les élémentaires de feu résistent au feu, jouez givre.",
+    "source": "Essences : environ 12 par heure selon Comptoir d'Azeroth. Feu élémentaire : estimation.",
+    "yields": [[7078, 12], [7068, 6]]
+  },
+  {
+    "name": "Satyres de Jaedenar",
+    "zone": "Gangrebois",
+    "req": "Niveau 55+",
+    "tip": "Les satyres tombent en petits packs : idéal pour l'AoE du mage. La gangrétoffe sert au tisse-lune (couture).",
+    "source": "Estimation de départ, à ajuster après un test d'une heure.",
+    "yields": [[14047, 60], [14256, 8]]
+  },
+  {
+    "name": "Minage du thorium",
+    "zone": "Cratère d'Un'Goro (tour des parois)",
+    "req": "Minage 245+",
+    "tip": "Monture obligatoire. Les cristaux arcaniques sont rares mais font l'essentiel de la valeur certaines heures.",
+    "source": "Estimation de départ, à ajuster après un test d'une heure.",
+    "yields": [[10620, 40], [12365, 12], [12363, 1]]
+  },
+  {
+    "name": "Morts-vivants des Maleterres",
+    "zone": "Maleterres de l'Est",
+    "req": "Niveau 55+",
+    "tip": "Fantômes et goules en petits groupes : bonne cible pour Explosion des arcanes.",
+    "source": "Estimation de départ, à ajuster après un test d'une heure.",
+    "yields": [[12808, 15], [14047, 50]]
+  },
+  {
+    "name": "Élémentaires de terre",
+    "zone": "Terres ingrates",
+    "req": "Niveau 40+",
+    "tip": "Farm accessible avant le niveau 60.",
+    "source": "Estimation de départ, à ajuster après un test d'une heure.",
+    "yields": [[7076, 4], [7067, 12]]
+  }
+]
